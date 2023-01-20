@@ -132,7 +132,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
         
         if( dropPinCount == 3){
             addPolygon()
-            
+            displayDistanceBetweenTwoMarkers()
         }
         
         dropPinCount += 1
@@ -193,6 +193,52 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
         let distance = coordinate1.distance(from: coordinate2)/1000
         
         return Int(distance)
+        
+    }
+    
+    
+    // Display the distance between the two markers on a label beside each polyline.
+    
+    func displayDistanceBetweenTwoMarkers(){
+
+        let distanceFirst = calculateDistanceBetweenTwoPoints(_coordinateFirst: locationsArr[0], _coordinateSecond: locationsArr[1])
+        let distanceSecond = calculateDistanceBetweenTwoPoints(_coordinateFirst: locationsArr[1], _coordinateSecond: locationsArr[2])
+        let distanceThird = calculateDistanceBetweenTwoPoints(_coordinateFirst: locationsArr[2], _coordinateSecond: locationsArr[0])
+        
+        // display distance between first two points
+        
+        let latitudeMidOne = ((locationsArr[0].latitude + locationsArr[1].latitude) / 2)
+        let longitudeMidOne = ((locationsArr[0].longitude + locationsArr[1].longitude) / 2)
+        
+        let location1 = CLLocationCoordinate2D(latitude: latitudeMidOne, longitude: longitudeMidOne)
+        let annotation1 = MKPointAnnotation()
+        annotation1.title = String(distanceFirst) + "Km"
+        annotation1.subtitle = "Distance Label"
+        annotation1.coordinate = location1
+        map.addAnnotation(annotation1)
+        // display distance between second third points
+        
+        let latitudeMidTwo = ((locationsArr[1].latitude + locationsArr[2].latitude) / 2)
+        let longitudeMidTwo = ((locationsArr[1].longitude + locationsArr[2].longitude) / 2)
+        
+        let location2 = CLLocationCoordinate2D(latitude: latitudeMidTwo, longitude: longitudeMidTwo)
+        let annotation2 = MKPointAnnotation()
+        annotation2.title = String(distanceSecond) + "Km"
+        annotation2.subtitle = "Distance Label"
+        annotation2.coordinate = location2
+        map.addAnnotation(annotation2)
+        
+        // display distance between second third points
+        
+        let latitudeMidThree = ((locationsArr[2].latitude + locationsArr[0].latitude) / 2)
+        let longitudeMidThree = ((locationsArr[2].longitude + locationsArr[0].longitude) / 2)
+        
+        let location3 = CLLocationCoordinate2D(latitude: latitudeMidThree, longitude: longitudeMidThree)
+        let annotation3 = MKPointAnnotation()
+        annotation3.title = String(distanceThird) + "Km"
+        annotation3.subtitle = "Distance Label"
+        annotation3.coordinate = location3
+        map.addAnnotation(annotation3)
         
     }
 
