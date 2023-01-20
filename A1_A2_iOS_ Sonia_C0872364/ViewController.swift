@@ -15,7 +15,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
     var dropPinCount = 1
     var locationsArr = [CLLocationCoordinate2D]()
     var titleArr = [1: "A", 2: "B", 3: "C"]
-    
+    var userCoordinates = CLLocationCoordinate2D()
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -36,9 +36,9 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         
         let userLocation = locations[0]
-        
-        let latitude = userLocation.coordinate.latitude
-        let longitude = userLocation.coordinate.longitude
+        userCoordinates = userLocation.coordinate
+        let latitude = userCoordinates.latitude
+        let longitude = userCoordinates.longitude
         
         displayLocation(latitude: latitude, longitude: longitude, title: "User Location", subtitle: "you are here")
         
@@ -88,10 +88,12 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
             annotationView.pinTintColor = #colorLiteral(red: 0.2588235438, green: 0.7568627596, blue: 0.9686274529, alpha: 1)
             annotationView.canShowCallout = true
             return annotationView
-        case "my destination":
+        case "A", "B", "C" :
             let annotationView = MKPinAnnotationView(annotation: annotation, reuseIdentifier: "droppablePin")
             annotationView.animatesDrop = true
-            annotationView.pinTintColor = #colorLiteral(red: 0.2588235438, green: 0.7568627596, blue: 0.9686274529, alpha: 1)
+            annotationView.pinTintColor = #colorLiteral(red: 0.5725490451, green: 0, blue: 0.2313725501, alpha: 1)
+            annotationView.canShowCallout = true
+            annotationView.rightCalloutAccessoryView = UIButton(type: .detailDisclosure)
             return annotationView
         case "my favorite":
             let annotationView = map.dequeueReusableAnnotationView(withIdentifier: "customPin") ?? MKPinAnnotationView()
@@ -166,6 +168,33 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
             }
             return MKOverlayRenderer()
         }
+    
+    
+    //MARK: - callout accessory control tapped
+    func mapView(_ mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
+        let viewCoordinate = view.annotation?.coordinate
+        let annotationTitle = (view.annotation?.title ?? "")!
+        let distance = calculateDistanceBetweenTwoPoints(_coordinateFirst: viewCoordinate!, _coordinateSecond: userCoordinates)
+        let message = "The distance between your location and Point " + annotationTitle + ": " + String(distance) + "Km"
+        
+        let alertController = UIAlertController(title: "Distance Between Two Points", message: message, preferredStyle: .alert)
+        let cancelAction = UIAlertAction(title: "OK", style: .cancel, handler: nil)
+        alertController.addAction(cancelAction)
+        present(alertController, animated: true, completion: nil)
+    }
+    
+    // Calculate distance between two points
+    
+    func calculateDistanceBetweenTwoPoints(_coordinateFirst: CLLocationCoordinate2D, _coordinateSecond: CLLocationCoordinate2D ) -> Int{
+        
+        let coordinate1 = CLLocation(latitude: _coordinateFirst.latitude, longitude: _coordinateFirst.longitude)
+        let coordinate2 = CLLocation(latitude: _coordinateSecond.latitude, longitude: _coordinateSecond.longitude)
+        
+        let distance = coordinate1.distance(from: coordinate2)/1000
+        
+        return Int(distance)
+        
+    }
 
 
 }
