@@ -12,6 +12,8 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
     
     @IBOutlet weak var map: MKMapView!
     var locationManager = CLLocationManager()
+    var dropPinCount = 1
+    var locationsArr = [CLLocationCoordinate2D]()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -24,6 +26,8 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
         locationManager.requestWhenInUseAuthorization()
         locationManager.startUpdatingLocation()
+        
+        addSingleTap()
     }
     
     // location manager
@@ -98,6 +102,86 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
             return nil
         }
     }
+    
+    //MARK: - single tap func
+    func addSingleTap() {
+        let singleTap = UITapGestureRecognizer(target: self, action: #selector(dropPin))
+        singleTap.numberOfTapsRequired = 1
+        map.addGestureRecognizer(singleTap)
+    }
+    
+    @objc func dropPin(sender: UITapGestureRecognizer) {
+        
+        if(dropPinCount <= 3){
+            // add annotation
+            let touchPoint = sender.location(in: map)
+            let coordinate = map.convert(touchPoint, toCoordinateFrom: map)
+            let annotation = MKPointAnnotation()
+            let loc: CLLocation = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude)
+            var address = ""
+            CLGeocoder().reverseGeocodeLocation(loc) { (placemarks, error) in
+                if error != nil {
+                    print(error!)
+                } else {
+                    if let placemark = placemarks?[0] {
+                        
+                        if placemark.locality != nil {
+                            address += placemark.locality! + "\n"
+                        }
+                        
+                        annotation.title = address
+                        
+                    }
+                    
+                }
+            }
+            annotation.coordinate = coordinate
+            map.addAnnotation(annotation)
+            
+            // add coordinate to locationArr
+            
+            locationsArr.append(coordinate)
+            
+        }
+        
+        if( dropPinCount == 3){
+            addPolygon()
+            
+        }
+        
+        dropPinCount += 1
+        //destination = coordinate
+    }
+    
+    //MARK: - polygon method
+    func addPolygon() {
+        let polygon = MKPolygon(coordinates: locationsArr, count: locationsArr.count)
+        map.addOverlay(polygon)
+    }
+    
+    //MARK: - rendrer for overlay func
+        func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
+            if overlay is MKCircle {
+                let rendrer = MKCircleRenderer(overlay: overlay)
+                rendrer.fillColor = UIColor.black.withAlphaComponent(0.5)
+                rendrer.strokeColor = UIColor.green
+                rendrer.lineWidth = 2
+                return rendrer
+            } else if overlay is MKPolyline {
+                let rendrer = MKPolylineRenderer(overlay: overlay)
+                rendrer.strokeColor = UIColor.blue
+                //rendrer.lineDashPattern = transportVal == .walking ? [0,10]: []
+                rendrer.lineWidth = 3
+                return rendrer
+            } else if overlay is MKPolygon {
+                let rendrer = MKPolygonRenderer(overlay: overlay)
+                rendrer.fillColor = UIColor.red.withAlphaComponent(0.6)
+                rendrer.strokeColor = UIColor.green
+                rendrer.lineWidth = 2
+                return rendrer
+            }
+            return MKOverlayRenderer()
+        }
 
 
 }
