@@ -14,6 +14,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
     var locationManager = CLLocationManager()
     var dropPinCount = 1
     var locationsArr = [CLLocationCoordinate2D]()
+    var titleArr = [1: "A", 2: "B", 3: "C"]
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -117,24 +118,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
             let touchPoint = sender.location(in: map)
             let coordinate = map.convert(touchPoint, toCoordinateFrom: map)
             let annotation = MKPointAnnotation()
-            let loc: CLLocation = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude)
-            var address = ""
-            CLGeocoder().reverseGeocodeLocation(loc) { (placemarks, error) in
-                if error != nil {
-                    print(error!)
-                } else {
-                    if let placemark = placemarks?[0] {
-                        
-                        if placemark.locality != nil {
-                            address += placemark.locality! + "\n"
-                        }
-                        
-                        annotation.title = address
-                        
-                    }
-                    
-                }
-            }
+            annotation.title = titleArr[dropPinCount]
             annotation.coordinate = coordinate
             map.addAnnotation(annotation)
             
