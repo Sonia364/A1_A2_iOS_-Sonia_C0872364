@@ -16,6 +16,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
     var locationsArr = [CLLocationCoordinate2D]()
     var titleArr = [1: "A", 2: "B", 3: "C"]
     var userCoordinates = CLLocationCoordinate2D()
+    @IBOutlet weak var directionBtn: UIButton!
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -29,6 +30,8 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
         locationManager.startUpdatingLocation()
         
         addSingleTap()
+        
+        directionBtn.layer.cornerRadius = 0.5 * directionBtn.bounds.size.width
     }
     
     // location manager
@@ -95,12 +98,6 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
             annotationView.canShowCallout = true
             annotationView.rightCalloutAccessoryView = UIButton(type: .detailDisclosure)
             return annotationView
-        case "my favorite":
-            let annotationView = map.dequeueReusableAnnotationView(withIdentifier: "customPin") ?? MKPinAnnotationView()
-            annotationView.image = UIImage(named: "ic_place_2x")
-            annotationView.canShowCallout = true
-            annotationView.rightCalloutAccessoryView = UIButton(type: .detailDisclosure)
-            return annotationView
         default:
             return nil
         }
@@ -126,6 +123,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
             
             dropPinCount = 1
             locationsArr.removeAll()
+            directionBtn.isHidden = true
             
         }
         
@@ -147,6 +145,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
         if( dropPinCount == 3){
             addPolygon()
             displayDistanceBetweenTwoMarkers()
+            directionBtn.isHidden = false
         }
         
         dropPinCount += 1
@@ -169,7 +168,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
                 return rendrer
             } else if overlay is MKPolyline {
                 let rendrer = MKPolylineRenderer(overlay: overlay)
-                rendrer.strokeColor = UIColor.blue
+                rendrer.strokeColor = UIColor.systemOrange
                 //rendrer.lineDashPattern = transportVal == .walking ? [0,10]: []
                 rendrer.lineWidth = 3
                 return rendrer
@@ -253,6 +252,58 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
         annotation3.subtitle = "Distance Label"
         annotation3.coordinate = location3
         map.addAnnotation(annotation3)
+        
+    }
+    
+
+    @IBAction func drawRoutes(_ sender: UIButton) {
+        
+        map.removeOverlays(map.overlays)
+        
+        self.map.annotations.forEach {
+          if !($0 is MKUserLocation) && ($0.subtitle == "Distance Label" ) {
+            self.map.removeAnnotation($0)
+          }
+        }
+        
+        // draw 1st route
+        fetchRoutes(_startCoordinate: locationsArr[0], _endCoordinate: locationsArr[1])
+        
+        // draw 2nd route
+        fetchRoutes(_startCoordinate: locationsArr[1], _endCoordinate: locationsArr[2])
+        
+        // draw 3rd route
+        fetchRoutes(_startCoordinate: locationsArr[2], _endCoordinate: locationsArr[0])
+    }
+    
+    func fetchRoutes(_startCoordinate : CLLocationCoordinate2D, _endCoordinate : CLLocationCoordinate2D){
+        
+        let sourcePlaceMark1 = MKPlacemark(coordinate: _startCoordinate)
+        let destinationPlaceMark2 = MKPlacemark(coordinate: _endCoordinate)
+        
+        // request a direction
+        let directionRequest = MKDirections.Request()
+        
+        // assign the source and destination properties of the request
+        directionRequest.source = MKMapItem(placemark: sourcePlaceMark1)
+        directionRequest.destination = MKMapItem(placemark: destinationPlaceMark2)
+        
+        // transportation type
+        directionRequest.transportType = .automobile
+        
+        // calculate the direction
+        let directions = MKDirections(request: directionRequest)
+        directions.calculate { (response, error) in
+            guard let directionResponse = response else {return}
+            // create the route
+            let route = directionResponse.routes[0]
+            // drawing a polyline
+            self.map.addOverlay(route.polyline, level: .aboveRoads)
+            
+            // define the bounding map rect
+            let rect = route.polyline.boundingMapRect
+            self.map.setVisibleMapRect(rect, edgePadding: UIEdgeInsets(top: 100, left: 100, bottom: 100, right: 100), animated: true)
+        }
         
     }
 
