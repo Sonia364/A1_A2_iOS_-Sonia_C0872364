@@ -13,6 +13,7 @@
 		B4EBE20D297B450C00289999 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B4EBE20B297B450C00289999 /* Main.storyboard */; };
 		B4EBE20F297B450C00289999 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B4EBE20E297B450C00289999 /* Assets.xcassets */; };
 		B4EBE212297B450C00289999 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B4EBE210297B450C00289999 /* LaunchScreen.storyboard */; };
+		B4EBE21A297B736F00289999 /* LocationSearchTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4EBE219297B736F00289999 /* LocationSearchTable.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,6 +25,7 @@
 		B4EBE20E297B450C00289999 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B4EBE211297B450C00289999 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		B4EBE213297B450C00289999 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B4EBE219297B736F00289999 /* LocationSearchTable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationSearchTable.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,6 +60,7 @@
 			children = (
 				B4EBE205297B450C00289999 /* AppDelegate.swift */,
 				B4EBE207297B450C00289999 /* SceneDelegate.swift */,
+				B4EBE219297B736F00289999 /* LocationSearchTable.swift */,
 				B4EBE209297B450C00289999 /* ViewController.swift */,
 				B4EBE20B297B450C00289999 /* Main.storyboard */,
 				B4EBE20E297B450C00289999 /* Assets.xcassets */,
@@ -141,6 +144,7 @@
 				B4EBE20A297B450C00289999 /* ViewController.swift in Sources */,
 				B4EBE206297B450C00289999 /* AppDelegate.swift in Sources */,
 				B4EBE208297B450C00289999 /* SceneDelegate.swift in Sources */,
+				B4EBE21A297B736F00289999 /* LocationSearchTable.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

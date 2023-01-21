@@ -8,6 +8,10 @@
 import UIKit
 import MapKit
 
+protocol HandleMapSearch {
+    func dropPinZoomIn(placemark:MKPlacemark)
+}
+
 class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDelegate {
     
     @IBOutlet weak var map: MKMapView!
@@ -17,6 +21,9 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
     var titleArr = [1: "A", 2: "B", 3: "C"]
     var userCoordinates = CLLocationCoordinate2D()
     @IBOutlet weak var directionBtn: UIButton!
+    var resultSearchController:UISearchController? = nil
+    var selectedPin:MKPlacemark? = nil
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -32,6 +39,19 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
         addSingleTap()
         
         directionBtn.layer.cornerRadius = 0.5 * directionBtn.bounds.size.width
+        
+        let locationSearchTable = storyboard!.instantiateViewController(withIdentifier: "LocationSearchTable") as! LocationSearchTable
+        resultSearchController = UISearchController(searchResultsController: locationSearchTable)
+        resultSearchController?.searchResultsUpdater = locationSearchTable
+        let searchBar = resultSearchController!.searchBar
+        searchBar.sizeToFit()
+        searchBar.placeholder = "Search for places"
+        navigationItem.titleView = resultSearchController?.searchBar
+        resultSearchController?.hidesNavigationBarDuringPresentation = false
+        definesPresentationContext = true
+        locationSearchTable.mapView = map
+        locationSearchTable.handleMapSearchDelegate = self
+        
     }
     
     // location manager
@@ -112,43 +132,10 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
     
     @objc func dropPin(sender: UITapGestureRecognizer) {
         
-        if( dropPinCount == 4){
-            map.removeOverlays(map.overlays)
-            
-            self.map.annotations.forEach {
-              if !($0 is MKUserLocation) {
-                self.map.removeAnnotation($0)
-              }
-            }
-            
-            dropPinCount = 1
-            locationsArr.removeAll()
-            directionBtn.isHidden = true
-            
-        }
+        let touchPoint = sender.location(in: map)
+        let coordinate = map.convert(touchPoint, toCoordinateFrom: map)
         
-        if(dropPinCount <= 3){
-            // add annotation
-            let touchPoint = sender.location(in: map)
-            let coordinate = map.convert(touchPoint, toCoordinateFrom: map)
-            let annotation = MKPointAnnotation()
-            annotation.title = titleArr[dropPinCount]
-            annotation.coordinate = coordinate
-            map.addAnnotation(annotation)
-            
-            // add coordinate to locationArr
-            
-            locationsArr.append(coordinate)
-            
-        }
-        
-        if( dropPinCount == 3){
-            addPolygon()
-            displayDistanceBetweenTwoMarkers()
-            directionBtn.isHidden = false
-        }
-        
-        dropPinCount += 1
+        handleDropPin(_coordinate: coordinate)
         //destination = coordinate
     }
     
@@ -306,7 +293,60 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
         }
         
     }
+    
+    func handleDropPin(_coordinate: CLLocationCoordinate2D){
+        
+        if( dropPinCount == 4){
+            map.removeOverlays(map.overlays)
+            
+            self.map.annotations.forEach {
+              if !($0 is MKUserLocation) {
+                self.map.removeAnnotation($0)
+              }
+            }
+            
+            dropPinCount = 1
+            locationsArr.removeAll()
+            directionBtn.isHidden = true
+            
+        }
+        
+        if(dropPinCount <= 3){
+            // add annotation
+            
+            let annotation = MKPointAnnotation()
+            annotation.title = titleArr[dropPinCount]
+            annotation.coordinate = _coordinate
+            map.addAnnotation(annotation)
+            
+            // add coordinate to locationArr
+            
+            locationsArr.append(_coordinate)
+            
+        }
+        
+        if( dropPinCount == 3){
+            addPolygon()
+            displayDistanceBetweenTwoMarkers()
+            directionBtn.isHidden = false
+        }
+        
+        dropPinCount += 1
+    }
 
 
 }
 
+extension ViewController: HandleMapSearch {
+    
+    func dropPinZoomIn(placemark:MKPlacemark){
+        // cache the pin
+        selectedPin = placemark
+        // clear existing pins
+        let span = MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+        let region = MKCoordinateRegion(center: placemark.coordinate, span: span)
+        map.setRegion(region, animated: true)
+        
+        handleDropPin(_coordinate: placemark.coordinate)
+    }
+}
