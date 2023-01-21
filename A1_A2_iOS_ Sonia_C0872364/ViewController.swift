@@ -115,6 +115,20 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
     
     @objc func dropPin(sender: UITapGestureRecognizer) {
         
+        if( dropPinCount == 4){
+            map.removeOverlays(map.overlays)
+            
+            self.map.annotations.forEach {
+              if !($0 is MKUserLocation) {
+                self.map.removeAnnotation($0)
+              }
+            }
+            
+            dropPinCount = 1
+            locationsArr.removeAll()
+            
+        }
+        
         if(dropPinCount <= 3){
             // add annotation
             let touchPoint = sender.location(in: map)
