@@ -297,32 +297,11 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
     func handleDropPin(_coordinate: CLLocationCoordinate2D){
         
         if( dropPinCount == 4){
-            map.removeOverlays(map.overlays)
-            
-            self.map.annotations.forEach {
-              if !($0 is MKUserLocation) {
-                self.map.removeAnnotation($0)
-              }
-            }
-            
-            dropPinCount = 1
-            locationsArr.removeAll()
-            directionBtn.isHidden = true
-            
+            removeAllOverlays()
         }
         
         if(dropPinCount <= 3){
-            // add annotation
-            
-            let annotation = MKPointAnnotation()
-            annotation.title = titleArr[dropPinCount]
-            annotation.coordinate = _coordinate
-            map.addAnnotation(annotation)
-            
-            // add coordinate to locationArr
-            
-            locationsArr.append(_coordinate)
-            
+            showMarkers(_coordinate: _coordinate)
         }
         
         if( dropPinCount == 3){
@@ -332,6 +311,33 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
         }
         
         dropPinCount += 1
+    }
+    
+    func removeAllOverlays(){
+        
+        map.removeOverlays(map.overlays)
+        
+        self.map.annotations.forEach {
+          if !($0 is MKUserLocation) {
+            self.map.removeAnnotation($0)
+          }
+        }
+        
+        dropPinCount = 1
+        locationsArr.removeAll()
+        directionBtn.isHidden = true
+    }
+    
+    func showMarkers(_coordinate: CLLocationCoordinate2D){
+        
+        let annotation = MKPointAnnotation()
+        annotation.title = titleArr[dropPinCount]
+        annotation.coordinate = _coordinate
+        map.addAnnotation(annotation)
+        
+        // add coordinate to locationArr
+        
+        locationsArr.append(_coordinate)
     }
 
 
